@@ -1,7 +1,8 @@
-
 module wei_db_contract::counter;
 
-fun init(ctx: &mut TxContext) {
+use wei_db_contract::graph::Graph;
+
+fun init(_ctx: &mut TxContext) {
 }
 
 
