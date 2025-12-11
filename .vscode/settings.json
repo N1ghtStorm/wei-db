@@ -1,0 +1,25 @@
+{
+  // Ассоциация файлов .move с языком Move для подсветки синтаксиса
+  "files.associations": {
+    "*.move": "move"
+  },
+  
+  // Настройки для Move
+  "[move]": {
+    "editor.defaultFormatter": "move.move-analyzer",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true
+  },
+  
+  // Рекомендуемые расширения для работы с Move
+  // Установите одно из следующих расширений:
+  // 1. "Move Language Support" (MoveBit) - ID: move.move-analyzer
+  // 2. "Sui Move" (Mysten Labs) - ID: sui-foundation.sui-move-analyzer
+  
+  // Настройки для файлов конфигурации Move
+  "[toml]": {
+    "editor.defaultFormatter": "tamasfe.even-better-toml"
+  }
+}
+

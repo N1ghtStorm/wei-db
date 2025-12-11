@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "move.move-analyzer",
+    "sui-foundation.sui-move-analyzer",
+    "tamasfe.even-better-toml"
+  ]
+}
+
