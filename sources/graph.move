@@ -1,6 +1,8 @@
 module wei_db_contract::graph;
 
 use std::string::String;
+use sui::object::{Self, UID};
+use sui::tx_context::TxContext;
 
 public struct Hash32 has copy, drop, store (address)
 
@@ -8,6 +10,14 @@ public struct Graph has key, store {
     id: UID,
     nodes: vector<Node>,
     edges: vector<Edge>,
+}
+
+public fun create_empty_graph(ctx: &mut TxContext): Graph {
+    Graph {
+        id: sui::object::new(ctx),
+        nodes: vector::empty(),
+        edges: vector::empty(),
+    }
 }
 
 public fun validate_graph(graph: &Graph): bool {
