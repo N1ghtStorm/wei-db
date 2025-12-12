@@ -24,7 +24,7 @@ public enum Opcode has drop {
     TraverseOut(),
 }
 
-public enum VmResult {
+public enum VmResult has drop {
     SubGraph {
         nodes: vector<Node>,
         edges: vector<Edge>,
