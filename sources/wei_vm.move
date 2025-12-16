@@ -4,8 +4,17 @@ use wei_db_contract::graph::Hash32;
 use std::string::String;
 use wei_db_contract::graph::Node;
 use wei_db_contract::graph::Edge;
+use wei_db_contract::graph::EdgeLabel;
 
 public struct TraverseOutParams has drop {
+    // labels to include with AND ruling
+    where_edge_and_labels: vector<EdgeLabel>,
+    // labels to include with OR ruling
+    where_edge_or_labels: vector<EdgeLabel>,
+    // labels to exclude with AND ruling
+    where_edge_not_and_labels: vector<EdgeLabel>,
+    // labels to exclude with OR ruling
+    where_edge_not_or_labels: vector<EdgeLabel>,
 }
 
 public enum Opcode has drop {
