@@ -104,3 +104,125 @@ public fun get_nodes(graph: &Graph): &vector<Node> {
 public fun get_edges(graph: &Graph): &vector<Edge> {
     &graph.edges
 }
+
+public struct TraverseOutParams has drop {
+    // labels to include with AND ruling
+    where_edge_and_labels: vector<EdgeLabel>,
+    // labels to include with OR ruling
+    where_edge_or_labels: vector<EdgeLabel>,
+    // labels to exclude with AND ruling
+    where_edge_not_and_labels: vector<EdgeLabel>,
+    // labels to exclude with OR ruling
+    where_edge_not_or_labels: vector<EdgeLabel>,
+}
+
+public fun traverse_out(
+    graph: &Graph,
+    from_nodes: vector<Hash32>,
+    params: &TraverseOutParams,
+): vector<Hash32> {
+    let mut result_nodes = vector::empty<Hash32>();
+    let from_len = vector::length(&from_nodes);
+    let edges = get_edges(graph);
+    let edges_len = vector::length(edges);
+    
+    let mut i = 0;
+    while (i < from_len) {
+        let from_node = *vector::borrow(&from_nodes, i);
+        
+        let mut j = 0;
+        while (j < edges_len) {
+            let edge = vector::borrow(edges, j);
+            let edge_label = get_edge_label(edge);
+            let edge_from = get_edge_from_node(edge);
+            let edge_to = get_edge_to_node(edge);
+            
+            // Check if edge matches traverse params
+            let should_include = check_edge_match(&edge_label, params);
+            
+            if (edge_from == from_node && should_include) {
+                // Check if to_node is already in result_nodes
+                let mut found = false;
+                let result_len = vector::length(&result_nodes);
+                let mut k = 0;
+                while (k < result_len && !found) {
+                    if (*vector::borrow(&result_nodes, k) == edge_to) {
+                        found = true;
+                    };
+                    k = k + 1;
+                };
+                if (!found) {
+                    vector::push_back(&mut result_nodes, edge_to);
+                };
+            };
+            j = j + 1;
+        };
+        i = i + 1;
+    };
+    
+    result_nodes
+}
+
+fun check_edge_match(label: &EdgeLabel, params: &TraverseOutParams): bool {
+    // Check AND labels (all must match)
+    let and_len = vector::length(&params.where_edge_and_labels);
+    if (and_len > 0) {
+        let mut all_match = true;
+        let mut i = 0;
+        while (i < and_len && all_match) {
+            let required_label = vector::borrow(&params.where_edge_and_labels, i);
+            if (!edge_labels_equal(label, required_label)) {
+                all_match = false;
+            };
+            i = i + 1;
+        };
+        if (!all_match) {
+            return false
+        };
+    };
+    
+    // Check OR labels (at least one must match)
+    let or_len = vector::length(&params.where_edge_or_labels);
+    if (or_len > 0) {
+        let mut any_match = false;
+        let mut i = 0;
+        while (i < or_len && !any_match) {
+            let or_label = vector::borrow(&params.where_edge_or_labels, i);
+            if (edge_labels_equal(label, or_label)) {
+                any_match = true;
+            };
+            i = i + 1;
+        };
+        if (!any_match) {
+            return false
+        };
+    };
+    
+    // Check NOT AND labels (none should match)
+    let not_and_len = vector::length(&params.where_edge_not_and_labels);
+    if (not_and_len > 0) {
+        let mut i = 0;
+        while (i < not_and_len) {
+            let not_label = vector::borrow(&params.where_edge_not_and_labels, i);
+            if (edge_labels_equal(label, not_label)) {
+                return false
+            };
+            i = i + 1;
+        };
+    };
+    
+    // Check NOT OR labels (if any matches, exclude)
+    let not_or_len = vector::length(&params.where_edge_not_or_labels);
+    if (not_or_len > 0) {
+        let mut i = 0;
+        while (i < not_or_len) {
+            let not_or_label = vector::borrow(&params.where_edge_not_or_labels, i);
+            if (edge_labels_equal(label, not_or_label)) {
+                return false
+            };
+            i = i + 1;
+        };
+    };
+    
+    true
+}
