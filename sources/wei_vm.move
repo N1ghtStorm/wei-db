@@ -19,15 +19,11 @@ public struct TraverseOutParams has drop {
 
 public enum Opcode has drop {
     SetCurrentFromAllNodes,
-    CreateNode {
-        node_id: Hash32,
-        node_root: Hash32,
-        data: vector<u8>,
+    CreateNodes {
+        nodes: vector<Node>,
     },
-    CreateEdge {
-        label: String,
-        from_node: Hash32,
-        to_node: Hash32,
+    CreateEdges {
+        edges: vector<Edge>,
     },
     SetLimit(u64),
     TraverseOut(),
