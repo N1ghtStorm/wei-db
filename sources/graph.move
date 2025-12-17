@@ -120,8 +120,8 @@ public fun traverse_out(
     graph: &Graph,
     from_nodes: vector<Hash32>,
     params: &TraverseOutParams,
-): vector<Hash32> {
-    let mut result_nodes = vector::empty<Hash32>();
+): vector<Node> {
+    let mut result_node_hashes = vector::empty<Hash32>();
     let from_len = vector::length(&from_nodes);
     let edges = get_edges(graph);
     let edges_len = vector::length(edges);
@@ -141,23 +141,44 @@ public fun traverse_out(
             let should_include = check_edge_match(&edge_label, params);
             
             if (edge_from == from_node && should_include) {
-                // Check if to_node is already in result_nodes
+                // Check if to_node is already in result_node_hashes
                 let mut found = false;
-                let result_len = vector::length(&result_nodes);
+                let result_len = vector::length(&result_node_hashes);
                 let mut k = 0;
                 while (k < result_len && !found) {
-                    if (*vector::borrow(&result_nodes, k) == edge_to) {
+                    if (*vector::borrow(&result_node_hashes, k) == edge_to) {
                         found = true;
                     };
                     k = k + 1;
                 };
                 if (!found) {
-                    vector::push_back(&mut result_nodes, edge_to);
+                    vector::push_back(&mut result_node_hashes, edge_to);
                 };
             };
             j = j + 1;
         };
         i = i + 1;
+    };
+    
+    // Convert hashes to full nodes
+    let mut result_nodes = vector::empty<Node>();
+    let nodes = get_nodes(graph);
+    let nodes_len = vector::length(nodes);
+    let result_hashes_len = vector::length(&result_node_hashes);
+    
+    let mut i_hash = 0;
+    while (i_hash < result_hashes_len) {
+        let target_hash = *vector::borrow(&result_node_hashes, i_hash);
+        let mut j_node = 0;
+        while (j_node < nodes_len) {
+            let node = vector::borrow(nodes, j_node);
+            if (get_node_id(node) == target_hash) {
+                vector::push_back(&mut result_nodes, *node);
+                break
+            };
+            j_node = j_node + 1;
+        };
+        i_hash = i_hash + 1;
     };
     
     result_nodes
