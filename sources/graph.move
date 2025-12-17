@@ -6,6 +6,10 @@ use sui::tx_context::TxContext;
 
 public struct Hash32 has copy, drop, store (address)
 
+public fun create_hash32(addr: address): Hash32 {
+    Hash32(addr)
+}
+
 public struct Graph has key, store {
     id: UID,
     nodes: vector<Node>,
@@ -103,6 +107,65 @@ public fun get_nodes(graph: &Graph): &vector<Node> {
 
 public fun get_edges(graph: &Graph): &vector<Edge> {
     &graph.edges
+}
+
+#[test_only]
+public fun add_node(graph: &mut Graph, node: Node) {
+    vector::push_back(&mut graph.nodes, node);
+}
+
+#[test_only]
+public fun add_edge(graph: &mut Graph, edge: Edge) {
+    vector::push_back(&mut graph.edges, edge);
+}
+
+#[test_only]
+public fun create_edge_label_number(n: u64): EdgeLabel {
+    EdgeLabel::Number(n)
+}
+
+#[test_only]
+public fun create_edge_label_bytes(b: vector<u8>): EdgeLabel {
+    EdgeLabel::Bytes(b)
+}
+
+#[test_only]
+public fun create_edge_label_hash(h: Hash32): EdgeLabel {
+    EdgeLabel::Hash(h)
+}
+
+#[test_only]
+public fun create_node(node_id: Hash32, node_root: Hash32, node_data: vector<u8>): Node {
+    Node {
+        node_id,
+        node_root,
+        node_data,
+    }
+}
+
+#[test_only]
+public fun create_edge(edge_id: Hash32, label: EdgeLabel, from_node: Hash32, to_node: Hash32): Edge {
+    Edge {
+        edge_id,
+        label,
+        from_node,
+        to_node,
+    }
+}
+
+#[test_only]
+public fun create_traverse_out_params(
+    where_edge_and_labels: vector<EdgeLabel>,
+    where_edge_or_labels: vector<EdgeLabel>,
+    where_edge_not_and_labels: vector<EdgeLabel>,
+    where_edge_not_or_labels: vector<EdgeLabel>,
+): TraverseOutParams {
+    TraverseOutParams {
+        where_edge_and_labels,
+        where_edge_or_labels,
+        where_edge_not_and_labels,
+        where_edge_not_or_labels,
+    }
 }
 
 public struct TraverseOutParams has drop {
