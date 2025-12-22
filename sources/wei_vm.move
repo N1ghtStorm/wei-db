@@ -4,12 +4,6 @@ use wei_db_contract::graph::{Self, Hash32, Node, Edge, Graph, TraverseOutParams}
 
 public enum Opcode has drop {
     SetCurrentFromAllNodes,
-    CreateNodes {
-        nodes: vector<Node>,
-    },
-    CreateEdges {
-        edges: vector<Edge>,
-    },
     SetLimit(u64),
     TraverseOut(TraverseOutParams),
 }
