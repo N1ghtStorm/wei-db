@@ -34,7 +34,6 @@ public struct Node has copy, drop, store {
     node_data: vector<u8>,
 }
 
-
 public enum EdgeLabel has copy, drop, store {
     Bytes(vector<u8>),
     Number(u64),
