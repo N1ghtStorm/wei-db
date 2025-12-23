@@ -3,7 +3,7 @@ module wei_db_contract::wei_vm;
 use wei_db_contract::graph::{Self, Hash32, Node, Edge, Graph, TraverseOutParams};
 
 public enum Opcode has drop {
-    SetVmresultType(VmResultType),
+    SetVmresultType(VmOutputType),
     SetCurrentFromAllNodes,
     SetLimit(u64),
     TraverseOut(TraverseOutParams),
@@ -15,22 +15,22 @@ public enum VmUnit has drop {
     Hash(Hash32),
 }
 
-public enum VmResultType has drop, copy {
+public enum VmOutputType has drop, copy {
     Units,
     Scalar,
     None,
 }
 
-public enum VmResult has drop {
+public enum VmOutput has drop {
     Units(vector<VmUnit>),
     Scalar(VmUnit),
     None
 }
 
-public fun execute_read_only(op: vector<Opcode>, graph: &Graph): VmResult {
+public fun execute_read_only(op: vector<Opcode>, graph: &Graph): VmOutput {
     let mut current_node_hashes = vector::empty<Hash32>();
 
-    let mut vm_result_type: VmResultType = VmResultType::None;
+    let mut vm_result_type: VmOutputType = VmOutputType::None;
     let mut result_nodes = vector::empty<Node>();
 
     let op_len = vector::length(&op);
@@ -63,15 +63,15 @@ public fun execute_read_only(op: vector<Opcode>, graph: &Graph): VmResult {
     };
     
     match (vm_result_type) {
-        VmResultType::Units => {
+        VmOutputType::Units => {
             let units = result_nodes.map!(|x| VmUnit::Node(x));
-            VmResult::Units(units)
+            VmOutput::Units(units)
         },
-        VmResultType::Scalar => {
-            VmResult::None
+        VmOutputType::Scalar => {
+            VmOutput::None
         },
-        VmResultType::None => {
-            VmResult::None
+        VmOutputType::None => {
+            VmOutput::None
         }
     }
 }

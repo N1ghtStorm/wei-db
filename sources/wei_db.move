@@ -1,7 +1,7 @@
 module wei_db_contract::counter;
 
 use wei_db_contract::graph::{Self, Graph};
-use wei_db_contract::wei_vm::{Self, VmResult};
+use wei_db_contract::wei_vm::{Self, VmOutput};
 use wei_db_contract::wei_parser;
 use std::string::String;
 
@@ -15,7 +15,7 @@ entry fun create_graph(ctx: &mut TxContext) {
     transfer::public_transfer(graph, tx_context::sender(ctx));
 }
 
-entry fun execute_query(cypher_query: String, graph: &Graph): VmResult {
+entry fun execute_query(cypher_query: String, graph: &Graph): VmOutput {
     let _query = wei_parser::parse_query(cypher_query);
     wei_vm::execute_read_only(vector::empty<wei_vm::Opcode>(), graph)
 }
