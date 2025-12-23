@@ -15,7 +15,7 @@ entry fun create_graph(ctx: &mut TxContext) {
     transfer::public_transfer(graph, tx_context::sender(ctx));
 }
 
-entry fun execute_query(cypher_query: String, graph: &mut Graph): VmResult {
+entry fun execute_query(cypher_query: String, graph: &Graph): VmResult {
     let _query = wei_parser::parse_query(cypher_query);
-    wei_vm::execute(vector::empty<wei_vm::Opcode>(), graph)
+    wei_vm::execute_read_only(vector::empty<wei_vm::Opcode>(), graph)
 }

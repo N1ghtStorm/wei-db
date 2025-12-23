@@ -3,30 +3,36 @@ module wei_db_contract::wei_vm;
 use wei_db_contract::graph::{Self, Hash32, Node, Edge, Graph, TraverseOutParams};
 
 public enum Opcode has drop {
+    SetVmresultType(VmResultType),
     SetCurrentFromAllNodes,
     SetLimit(u64),
     TraverseOut(TraverseOutParams),
 }
 
+public enum VmUnit has drop {
+    Node(Node),
+    Edge(Edge),
+    Hash(Hash32),
+}
+
+public enum VmResultType has drop, copy {
+    Units,
+    Scalar,
+    None,
+}
+
 public enum VmResult has drop {
-    SubGraph {
-        nodes: vector<Node>,
-        edges: vector<Edge>,
-    },
-    Nodes(vector<Node>),
-    Hashes(vector<Hash32>),
-    ScalarHash(Hash32),
-    ScalarNumber(u64),
+    Units(vector<VmUnit>),
+    Scalar(VmUnit),
     None
 }
 
-public struct VM has drop {
-    limit: Option<u64>,
-}
-
-public fun execute(op: vector<Opcode>, graph: &mut Graph): VmResult {
+public fun execute_read_only(op: vector<Opcode>, graph: &Graph): VmResult {
     let mut current_node_hashes = vector::empty<Hash32>();
-    
+
+    let mut vm_result_type: VmResultType = VmResultType::None;
+    let mut result_nodes = vector::empty<Node>();
+
     let op_len = vector::length(&op);
     let mut i = 0;
     
@@ -34,6 +40,9 @@ public fun execute(op: vector<Opcode>, graph: &mut Graph): VmResult {
         let opcode_ref = vector::borrow(&op, i);
         
         match (opcode_ref) {
+            Opcode::SetVmresultType(result) => {
+                vm_result_type = *result;
+            },
             Opcode::SetCurrentFromAllNodes => {
                 current_node_hashes = vector::empty<Hash32>();
                 let nodes = graph::get_nodes(graph);
@@ -46,48 +55,23 @@ public fun execute(op: vector<Opcode>, graph: &mut Graph): VmResult {
                 };
             },
             Opcode::TraverseOut(params) => {
-                let result_nodes = graph::traverse_out(graph, current_node_hashes, params);
-                // Convert nodes back to hashes for next iteration
-                current_node_hashes = vector::empty<Hash32>();
-                let result_len = vector::length(&result_nodes);
-                let mut k = 0;
-                while (k < result_len) {
-                    let node = vector::borrow(&result_nodes, k);
-                    vector::push_back(&mut current_node_hashes, graph::get_node_id(node));
-                    k = k + 1;
-                };
+                result_nodes = graph::traverse_out(graph, current_node_hashes, params);
             },
             _ => {},
         };
         i = i + 1;
     };
     
-    // Convert hashes to full nodes
-    let mut result_nodes = vector::empty<Node>();
-    let nodes = graph::get_nodes(graph);
-    let nodes_len = vector::length(nodes);
-    let current_len = vector::length(&current_node_hashes);
-    
-    let mut i = 0;
-    while (i < current_len) {
-        let target_hash = *vector::borrow(&current_node_hashes, i);
-        let mut j = 0;
-        while (j < nodes_len) {
-            let node = vector::borrow(nodes, j);
-            if (graph::get_node_id(node) == target_hash) {
-                vector::push_back(&mut result_nodes, *node);
-                break
-            };
-            j = j + 1;
-        };
-        i = i + 1;
-    };
-    
-    let result_len = vector::length(&result_nodes);
-    
-    if (result_len > 0) {
-        VmResult::Nodes(result_nodes)
-    } else {
-        VmResult::None
+    match (vm_result_type) {
+        VmResultType::Units => {
+            let units = result_nodes.map!(|x| VmUnit::Node(x));
+            VmResult::Units(units)
+        },
+        VmResultType::Scalar => {
+            VmResult::None
+        },
+        VmResultType::None => {
+            VmResult::None
+        }
     }
 }
